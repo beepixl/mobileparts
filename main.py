@@ -68,11 +68,5 @@ for line in links:
             fp.write(response.content)
             fp.close()
             with Image.open(os.path.join(mainfolder+"/"+folder_name, folder_name+'.jpg')) as im:
-             im = resize(im,450,450)
-             # if im.mode in ('RGBA', 'LA'):
-             #     background = Image.new(im.mode[:-1], im.size, 'white')
-             #     background.paste(im, im.split()[-1])
-             #     image = background
-             # else:
-             #     im = ImageOps.pad(im, (450, 450), color='white')
+             im = resize(im,2500,2500)
              im.save(os.path.join(mainfolder+"/"+folder_name, folder_name+'_thumb.jpg'))
