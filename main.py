@@ -1,16 +1,18 @@
 import urllib
 import os
-import sys
 
-import PIL
-from PIL import Image, ImageOps
+import unidecode as unidecode
+from PIL import Image
 import time
 import requests
-from PIL.Image import Resampling
+from slugify import slugify
+import re
+import unicodedata
+
 from bs4 import BeautifulSoup
 size2 = (450, 450)
 width,height = '450', '450'
-mainfolder = 'iphone-14-plus'
+mainfolder = 'iphone-14'
 
 
 # Making a GET request
@@ -19,7 +21,7 @@ r = requests.get('https://www.mobilesentrix.com/replacement-parts/apple/iphone-p
 # Parsing the HTML
 soup = BeautifulSoup(r.content, 'html.parser')
 print(soup.prettify())
-links = soup.find_all('img', {'class': 'small-img'})
+links = soup.find_all('a', {'class': 'product-image'})
 def resize(image_pil, width, height):
     '''
     Resize PIL image keeping ratio and using white background.
@@ -52,8 +54,14 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
 
 for line in links:
     time.sleep(1)
-    current_url = line['data-original'].replace("/cache/1/small_image/210x/0dc2d03fe217f8c83829496872af24a0/", "/")
-    folder_name = line['alt'].replace("/","-")
+    print(line['href'])
+
+    imgurl = line.find('img',{'class':'small-img'})
+
+    current_url = imgurl['data-original'].replace("/cache/1/small_image/210x/0dc2d03fe217f8c83829496872af24a0/", "/")
+    folder_name = line['href'].replace("https://www.mobilesentrix.com/", "")+"_fonelink"
+    #folder_name = line['alt'].replace("/","-")
+    #folder_name = slugify(unidecode(folder_name))
     print(current_url)
     opener = urllib.request.build_opener()
     opener.addheader = hdr
@@ -62,11 +70,11 @@ for line in links:
     if response.status_code:
         if os.path.exists(mainfolder) is False:
             os.mkdir(mainfolder)
-        if os.path.exists(mainfolder+"/"+folder_name) is False:
-            os.mkdir(mainfolder+"/"+folder_name)
-        with open(os.path.join(mainfolder+"/"+folder_name, folder_name+'.jpg'), 'wb') as fp:
+        if os.path.exists(mainfolder) is False:
+            os.mkdir(mainfolder)
+        with open(os.path.join(mainfolder, folder_name+'.jpg'), 'wb') as fp:
             fp.write(response.content)
             fp.close()
-            with Image.open(os.path.join(mainfolder+"/"+folder_name, folder_name+'.jpg')) as im:
-             im = resize(im,2500,2500)
-             im.save(os.path.join(mainfolder+"/"+folder_name, folder_name+'_thumb.jpg'))
+            with Image.open(os.path.join(mainfolder, folder_name+'.jpg')) as im:
+             im = resize(im,1000,1000)
+             im.save(os.path.join(mainfolder, folder_name+'.jpg'))
